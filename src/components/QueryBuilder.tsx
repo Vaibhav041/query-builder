@@ -7,6 +7,35 @@ type Props = {
 };
 
 const QueryBuilder = ({ queryData, setQueryData }: Props) => {
+  const [resultQuery, setResultQuery] = React.useState<string>("");
+
+  const generateSql = () => {
+    const { tableName, columnsData: rowData } = queryData;
+    const columnNames = Object.keys(rowData);
+
+    const values = Object.values(rowData);
+
+    const columns = columnNames.join(", ");
+    const rowValues = values.join(", ");
+
+    setResultQuery(
+      `INSERT INTO ${tableName} (${columns}) VALUES (${rowValues});`
+    );
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard
+      .writeText(resultQuery)
+      .then(() => {
+        console.log("SQL copied to clipboard");
+        // You can provide user feedback here if needed
+      })
+      .catch((err) => {
+        console.error("Failed to copy SQL to clipboard", err);
+        // Handle error
+      });
+  };
+
   return (
     <div className="relative w-full">
       <div className="mt-10 flex flex-col items-center">
@@ -24,7 +53,10 @@ const QueryBuilder = ({ queryData, setQueryData }: Props) => {
             );
           })}
         </div>
-        <button className="bg-red-500 px-2 py-1 rounded-md text-white mt-10">
+        <button
+          className="bg-red-500 px-2 py-1 rounded-md text-white mt-10"
+          onClick={generateSql}
+        >
           Generate Sql
         </button>
       </div>
@@ -34,6 +66,17 @@ const QueryBuilder = ({ queryData, setQueryData }: Props) => {
       >
         {"<-"}
       </p>
+      {resultQuery.length > 0 && (
+        <div className="flex mt-10 bg-gray-100 mx-5 p-3 rounded-md h-24 relative overflow-y-auto">
+          <p>{resultQuery}</p>
+          <button
+            className="bg-green-500 w-16 text-white rounded-sm p-1 absolute right-2 top-2"
+            onClick={copyToClipboard}
+          >
+            Copy
+          </button>
+        </div>
+      )}
     </div>
   );
 };
